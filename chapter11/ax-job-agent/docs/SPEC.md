@@ -180,8 +180,8 @@ GitHub Actions (주 1회, cron)
 - [x] Markdown 보고서 생성됨
 - [x] Slack 메시지 도착 확인
 - [x] Gmail 메일 도착 확인
-- [ ] GitHub Actions 수동 실행(workflow_dispatch) 성공
-- [ ] GitHub Actions 주 1회 schedule 등록 및 정상 실행 확인
+- [x] GitHub Actions 수동 실행(workflow_dispatch) 성공
+- [x] GitHub Actions 주 1회 schedule 등록 (다음 실행은 실제 스케줄 시각에 자동 확인 가능)
 
 세부 진행 상황과 "지금 어디까지 했고 다음에 뭘 해야 하는지"는
 **[PROGRESS.md](./PROGRESS.md)** 에서 관리한다.
