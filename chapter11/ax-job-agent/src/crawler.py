@@ -10,10 +10,23 @@ from bs4 import BeautifulSoup
 USER_AGENT = "Mozilla/5.0"
 
 
+def _get_with_retry(url, retries=3, timeout=15, wait_seconds=5, **kwargs):
+    last_error = None
+    for attempt in range(retries):
+        try:
+            res = requests.get(url, timeout=timeout, **kwargs)
+            res.encoding = "utf-8"
+            return res
+        except requests.exceptions.RequestException as e:
+            last_error = e
+            if attempt < retries - 1:
+                time.sleep(wait_seconds)
+    raise last_error
+
+
 def collect_jobs(keyword, max_items=10):
     url = f"https://www.jobkorea.co.kr/Search/?stext={keyword}&tabType=recruit"
-    res = requests.get(url, headers={"User-Agent": USER_AGENT})
-    res.encoding = "utf-8"
+    res = _get_with_retry(url, headers={"User-Agent": USER_AGENT})
     soup = BeautifulSoup(res.text, "html.parser")
     cards = soup.find_all("div", attrs={"data-sentry-component": "CardJob"})
 
@@ -61,8 +74,7 @@ def collect_jobs(keyword, max_items=10):
 
 def get_job_dates(job_url):
     try:
-        res = requests.get(job_url, headers={"User-Agent": USER_AGENT}, timeout=10)
-        res.encoding = "utf-8"
+        res = _get_with_retry(job_url, headers={"User-Agent": USER_AGENT}, retries=2)
         soup = BeautifulSoup(res.text, "html.parser")
         for script in soup.find_all("script", attrs={"type": "application/ld+json"}):
             try:
