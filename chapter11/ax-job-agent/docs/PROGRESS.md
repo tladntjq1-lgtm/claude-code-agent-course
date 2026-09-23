@@ -9,8 +9,9 @@
 ## 지금 상태 요약 (마지막 업데이트: 2026-09-23)
 
 - **현재 브랜치**: `ax-job-agent`
-- **마지막으로 완료한 작업**: **STEP 16 완료 (사용자 본인 확인으로 검증됨)** — `python main.py` 실제 실행 성공 (약 20초), 수집 10건/신규 0건/보고서 생성/Slack 발송 True/Gmail 발송 True. Slack 채널과 Gmail 받은편지함 모두 실제 도착 확인됨
-- **다음에 할 일**: STEP 17 — GitHub Actions 수동 실행 (`workflow_dispatch`만 있는 workflow 작성, GitHub Secrets 등록)
+- **마지막으로 완료한 작업**: **STEP 17 완료** — `.github/workflows/ax-job-agent.yml`(`workflow_dispatch`) 작성, GitHub Secrets 4개 등록, PR #2로 main 병합 후 수동 실행 성공. 중간에 `ConnectTimeout`(잡코리아 접속 타임아웃) 1회 발생 → `collect_jobs`/`get_job_dates`에 재시도(retry+backoff) 로직 추가(PR #3, main 병합)한 뒤 재실행 성공 확인
+- **다음에 할 일**: STEP 18 — GitHub Actions에 `schedule: cron` 추가해서 주 1회 자동 실행 설정
+- **주의사항 (GitHub Actions)**: 잡코리아가 가끔 GitHub Actions 러너 IP로부터의 요청을 타임아웃시킴(간헐적) → 크롤러에 재시도 로직 있음. `workflow_dispatch`는 **default 브랜치(main)에 워크플로 파일이 있어야** Actions 화면 목록에 나타남 (feature 브랜치에만 있으면 안 보임)
 - **참고**: `src/` 모듈은 프로젝트 루트(`chapter11/ax-job-agent/`)에서 실행하는 것을 전제로 상대경로(`data/processed/...`, `.env`, `reports/`)를 사용함. 노트북(`notebooks/`)에서 그대로 가져다 쓰려면 경로 앞에 `../`가 필요함
 - **주의사항 (.env 재로딩)**: 노트북 실행 중간에 `.env` 값을 새로 채워 넣은 경우, `load_dotenv()`를 다시 호출해도 **기본적으로 이미 로드된 값을 덮어쓰지 않음**. 반드시 `load_dotenv(path, override=True)`로 호출해야 새 값이 반영됨
 - **주의사항 (Gemini 할당량)**: `gemini-3.6-flash`는 무료 티어 **하루 20회** 제한이 있어 실습 중 소진됨 (분당 제한과는 별개). `gemini-flash-lite-latest` 모델로 교체해서 해결 (별도 할당량, "lite" 계열 모델이 대체로 여유 있음). `summarize_job()`에 재시도 로직(APIError 전체 캐치, 25초 간격) + `job_url` 기준 캐싱(중복 호출 방지) 추가됨
@@ -119,10 +120,13 @@
 - [x] `python main.py` 끝까지 성공 (약 20초), 수집 10건/보고서 생성/Slack·Gmail 발송 True
 - [x] 사용자가 Slack 채널/Gmail 받은편지함에서 실제 도착 확인
 
-### STEP 17. GitHub Actions 수동 실행 ⬅️ **다음 작업**
-- [ ] `workflow_dispatch`만 있는 workflow 작성, Secrets 등록, 수동 실행 성공
+### STEP 17. GitHub Actions 수동 실행 ✅ 완료
+- [x] `.github/workflows/ax-job-agent.yml` 작성 (`workflow_dispatch`)
+- [x] GitHub Secrets 4개 등록 (`GEMINI_API_KEY`, `SLACK_WEBHOOK_URL`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`)
+- [x] PR #2로 main 병합, 수동 실행 성공 (수집 10건, Slack/Gmail 발송 True)
+- [x] 간헐적 `ConnectTimeout` 발견 → 재시도 로직 추가(PR #3) 후 재검증 성공
 
-### STEP 18. GitHub Actions 주간 실행
+### STEP 18. GitHub Actions 주간 실행 ⬅️ **다음 작업**
 - [ ] `schedule: cron` 추가 (주 1회), 정상 동작 확인
 
 ---
