@@ -9,9 +9,9 @@
 ## 지금 상태 요약 (마지막 업데이트: 2026-09-23)
 
 - **현재 브랜치**: `ax-job-agent`
-- **마지막으로 완료한 작업**: **STEP 17 완료** — `.github/workflows/ax-job-agent.yml`(`workflow_dispatch`) 작성, GitHub Secrets 4개 등록, PR #2로 main 병합 후 수동 실행 성공. 중간에 `ConnectTimeout`(잡코리아 접속 타임아웃) 1회 발생 → `collect_jobs`/`get_job_dates`에 재시도(retry+backoff) 로직 추가(PR #3, main 병합)한 뒤 재실행 성공 확인
-- **다음에 할 일**: STEP 18 — GitHub Actions에 `schedule: cron` 추가해서 주 1회 자동 실행 설정
-- **주의사항 (GitHub Actions)**: 잡코리아가 가끔 GitHub Actions 러너 IP로부터의 요청을 타임아웃시킴(간헐적) → 크롤러에 재시도 로직 있음. `workflow_dispatch`는 **default 브랜치(main)에 워크플로 파일이 있어야** Actions 화면 목록에 나타남 (feature 브랜치에만 있으면 안 보임)
+- **마지막으로 완료한 작업**: **STEP 18 완료 — 전체 STEP 00~18 완주.** `.github/workflows/ax-job-agent.yml`에 `schedule: cron: "0 0 * * 1"`(매주 월요일 09:00 KST) 추가, PR #4로 main 병합 완료. main 브랜치 워크플로 파일에 schedule이 정상 반영된 것을 GitHub API로 확인
+- **다음에 할 일**: 없음 — 강의안의 전체 파이프라인(수집→정제→분석→AI해석→보고→Slack/Gmail→자동화)이 완성됨. 이후 여유가 있으면: (1) posted_date/closing_date 없이도 동작하도록 방어 코드 보강, (2) 여러 검색어로 확장, (3) 실제 주간 스케줄 실행이 잘 도는지 다음 주 월요일에 확인
+- **주의사항 (GitHub Actions)**: 잡코리아가 가끔 GitHub Actions 러너 IP로부터의 요청을 타임아웃시킴(간헐적) → 크롤러에 재시도 로직 있음. `workflow_dispatch`/`schedule` 모두 **default 브랜치(main)에 워크플로 파일이 있어야** 정상 동작함 (feature 브랜치에만 있으면 UI 목록에 안 뜨고, schedule은 아예 실행되지 않음)
 - **참고**: `src/` 모듈은 프로젝트 루트(`chapter11/ax-job-agent/`)에서 실행하는 것을 전제로 상대경로(`data/processed/...`, `.env`, `reports/`)를 사용함. 노트북(`notebooks/`)에서 그대로 가져다 쓰려면 경로 앞에 `../`가 필요함
 - **주의사항 (.env 재로딩)**: 노트북 실행 중간에 `.env` 값을 새로 채워 넣은 경우, `load_dotenv()`를 다시 호출해도 **기본적으로 이미 로드된 값을 덮어쓰지 않음**. 반드시 `load_dotenv(path, override=True)`로 호출해야 새 값이 반영됨
 - **주의사항 (Gemini 할당량)**: `gemini-3.6-flash`는 무료 티어 **하루 20회** 제한이 있어 실습 중 소진됨 (분당 제한과는 별개). `gemini-flash-lite-latest` 모델로 교체해서 해결 (별도 할당량, "lite" 계열 모델이 대체로 여유 있음). `summarize_job()`에 재시도 로직(APIError 전체 캐치, 25초 간격) + `job_url` 기준 캐싱(중복 호출 방지) 추가됨
@@ -126,8 +126,10 @@
 - [x] PR #2로 main 병합, 수동 실행 성공 (수집 10건, Slack/Gmail 발송 True)
 - [x] 간헐적 `ConnectTimeout` 발견 → 재시도 로직 추가(PR #3) 후 재검증 성공
 
-### STEP 18. GitHub Actions 주간 실행 ⬅️ **다음 작업**
-- [ ] `schedule: cron` 추가 (주 1회), 정상 동작 확인
+### STEP 18. GitHub Actions 주간 실행 ✅ 완료 — 🎉 전체 STEP 완주
+- [x] `schedule: cron: "0 0 * * 1"` 추가 (매주 월요일 09:00 KST)
+- [x] PR #4로 main 병합, GitHub API로 워크플로 파일에 schedule 정상 반영 확인
+- [ ] (참고) 실제 스케줄 발동은 다음 월요일에 확인 가능 (cron은 미래 시점에만 트리거됨)
 
 ---
 
